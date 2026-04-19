@@ -1,9 +1,10 @@
+---
 # Prometheus alerting rules for SLO monitoring
 groups:
   - name: slo_alerts
     rules:
 
-      # Alert when error rate exceeds 1% (burns through error budget fast)
+      # Alert when error rate exceeds 1%
       - alert: HighErrorRate
         expr: |
           sum(rate(http_requests_total{status=~"5.."}[5m]))
@@ -15,23 +16,35 @@ groups:
           team: sre
         annotations:
           summary: "High error rate detected"
-          description: "Error rate is {{ $value | humanizePercentage }} — SLO breach imminent."
-          runbook: "https://github.com/devkr5670/SRE-Engineer/blob/main/docs/runbooks/high_error_rate.md"
+          description: >-
+            Error rate is {{ $value | humanizePercentage }}
+            — SLO breach imminent.
+          runbook: >-
+            https://github.com/devkr5670/SRE-Engineer/blob/main/
+            docs/runbooks/high_error_rate.md
 
       # Alert when CPU stays above 85% for 5 minutes
       - alert: HighCPUUsage
         expr: |
-          100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+          100 - (
+            avg by(instance) (
+              rate(node_cpu_seconds_total{mode="idle"}[5m])
+            ) * 100
+          ) > 85
         for: 5m
         labels:
           severity: warning
           team: sre
         annotations:
-          summary: "High CPU usage on {{ $labels.instance }}"
-          description: "CPU usage is {{ $value }}% — investigate immediately."
-          runbook: "https://github.com/devkr5670/SRE-Engineer/blob/main/docs/runbooks/high_cpu.md"
+          summary: "High CPU on {{ $labels.instance }}"
+          description: >-
+            CPU usage is {{ $value }}%
+            — investigate immediately.
+          runbook: >-
+            https://github.com/devkr5670/SRE-Engineer/blob/main/
+            docs/runbooks/high_cpu.md
 
-      # Alert when API availability SLO drops below 99.9%
+      # Alert when availability SLO drops below 99.9%
       - alert: AvailabilitySLOBreach
         expr: |
           sum(rate(http_requests_total{status!~"5.."}[30m]))
@@ -43,5 +56,9 @@ groups:
           team: sre
         annotations:
           summary: "Availability SLO breached"
-          description: "Availability is {{ $value | humanizePercentage }} — below 99.9% SLO."
-          runbook: "https://github.com/devkr5670/SRE-Engineer/blob/main/docs/runbooks/availability.md"
+          description: >-
+            Availability is {{ $value | humanizePercentage }}
+            — below 99.9% SLO.
+          runbook: >-
+            https://github.com/devkr5670/SRE-Engineer/blob/main/
+            docs/runbooks/availability.md
