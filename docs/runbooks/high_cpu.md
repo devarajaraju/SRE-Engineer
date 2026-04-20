@@ -1,5 +1,43 @@
 # Runbook: High CPU Usage
 
+**Alert:** HighCPUUsage
+**Severity:** SEV-2
+**Server:** 3.80.93.142
+
+## Symptoms
+- CPU above 85% for 5+ minutes
+- App response times increasing
+
+## Diagnosis
+```bash
+# SSH into server
+ssh -i sre-key.pem ubuntu@3.80.93.142
+
+# Check CPU usage
+top
+
+# Check which process is using CPU
+ps aux --sort=-%cpu | head -10
+
+# Check app logs for errors
+sudo journalctl -u sre-app -n 50
+```
+
+## Remediation
+
+### Step 1: Restart the app
+```bash
+sudo systemctl restart sre-app
+```
+
+### Step 2: If CPU stays high, reboot instance
+```bash
+sudo reboot
+```
+
+## Escalation
+- Not resolved in 30 min → escalate to SRE Lead# Runbook: High CPU Usage
+
 **Alert:** `HighCPUUsage`
 **Severity:** SEV-2
 **Team:** SRE On-Call
