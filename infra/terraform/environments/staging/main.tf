@@ -26,6 +26,7 @@ resource "aws_instance" "sre_server" {
     Environment = "staging"
     ManagedBy   = "terraform"
     Team        = "sre"
+    UpdatedBy   = "ci-cd"
   }
 }
 
