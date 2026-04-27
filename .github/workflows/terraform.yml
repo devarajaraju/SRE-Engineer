@@ -21,8 +21,8 @@ jobs:
   terraform-plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
-
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -58,9 +58,6 @@ jobs:
             -out=tfplan \
             -no-color \
             -input=false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Save Plan Output
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -71,7 +68,7 @@ jobs:
           cat plan_output.txt
 
       - name: Upload Plan as Artifact
-        uses: actions/upload-artifact@v4        
+        uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
           path: ${{ env.TF_WORKING_DIR }}/plan_output.txt
@@ -87,12 +84,11 @@ jobs:
               '${{ env.TF_WORKING_DIR }}/plan_output.txt',
               'utf8'
             );
-            const output = `## 🔍 Terraform Plan
-            \`\`\`hcl
+            const output = `## Terraform Plan
+            \`\`\`
             ${plan}
             \`\`\`
-            *Pushed by: @${{ github.actor }}*`;
-
+            *Pushed by @${{ github.actor }}*`;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -108,9 +104,9 @@ jobs:
 
     environment:
       name: production
-      url: http://${{ steps.get-ip.outputs.ip }}
 
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -137,9 +133,6 @@ jobs:
             -auto-approve \
             -no-color \
             -input=false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Get EC2 Public IP
         id: get-ip
@@ -149,7 +142,7 @@ jobs:
           echo "ip=$IP" >> $GITHUB_OUTPUT
           echo "EC2 Public IP: $IP"
 
-      - name: Verify EC2 is Running
+      - name: Verify EC2 Running
         run: |
           aws ec2 describe-instances \
             --filters \
