@@ -11,6 +11,150 @@ on:
       - main
     paths:
       - 'infra/terraform/**'
+  workflow_dispatch:          # ← allows manual trigger
+    inputs:
+      action:
+        description: 'Terraform action to run'
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  TF_WORKING_DIR: infra/terraform/environments/staging
+  AWS_REGION: us-east-1
+
+jobs:
+
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init
+
+      - name: Terraform Format Check
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          terraform plan \
+            -out=tfplan \
+            -no-color \
+            -input=false
+
+      - name: Save Plan Output
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          terraform show \
+            -no-color tfplan \
+            > plan_output.txt
+          cat plan_output.txt
+
+      - name: Upload Plan as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ env.TF_WORKING_DIR }}/plan_output.txt
+
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    if: |
+      (github.ref == 'refs/heads/main' &&
+      github.event_name == 'push') ||
+      (github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.action == 'apply')
+
+    environment:
+      name: production
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          terraform apply \
+            -auto-approve \
+            -no-color \
+            -input=false
+
+      - name: Get EC2 Public IP
+        id: get-ip
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          IP=$(terraform output -raw ec2_public_ip)
+          echo "ip=$IP" >> $GITHUB_OUTPUT
+          echo "EC2 Public IP: $IP"
+
+      - name: Verify EC2 Running
+        run: |
+          aws ec2 describe-instances \
+            --filters \
+              "Name=tag:ManagedBy,Values=terraform" \
+              "Name=instance-state-name,Values=running" \
+            --query \
+              'Reservations[*].Instances[*].[InstanceId,State.Name,PublicIpAddress]' \
+            --output table \
+            --region ${{ env.AWS_REGION }}name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/terraform/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infra/terraform/**'
 
 env:
   TF_WORKING_DIR: infra/terraform/environments/staging
