@@ -38,10 +38,9 @@ resource "aws_eip" "sre_eip" {
     Name = "sre-staging-eip"
   }
 }
-import { to = aws_security_group.sre_sg id = "sg-0aab3dda3c3519097"}
 # Security Group
 resource "aws_security_group" "sre_sg" {
-  name        = "sre-staging-sg-tf"
+  name        = "sre-staging-sg-tf-v2"
   description = "Security group for SRE staging server"
 
   ingress {
@@ -87,7 +86,7 @@ resource "aws_security_group" "sre_sg" {
   }
 
   tags = {
-    Name      = "sre-staging-sg-tf"
+    Name      = "sre-staging-sg-tf-v2"
     ManagedBy = "terraform"
   }
 }
