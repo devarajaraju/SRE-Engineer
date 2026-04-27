@@ -24,6 +24,18 @@ jobs:
           pip install yamllint
           yamllint monitoring/alerts/
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Validate
+        run: |
+          cd infra/terraform/environments/staging
+          terraform init -backend=false
+          terraform validate
+          terraform fmt -check
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest
