@@ -38,7 +38,7 @@ resource "aws_eip" "sre_eip" {
     Name = "sre-staging-eip"
   }
 }
-
+import { to = aws_security_group.sre_sg id = "sg-0aab3dda3c3519097"}
 # Security Group
 resource "aws_security_group" "sre_sg" {
   name        = "sre-staging-sg-tf"
