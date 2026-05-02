@@ -40,6 +40,12 @@ jobs:
           terraform validate
           terraform fmt -check
 
+      - name: Validate K8s manifests
+        run: |
+          pip install yamllint
+          yamllint infra/k8s/
+          echo "K8s manifests are valid" 
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest

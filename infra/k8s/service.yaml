@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sre-app-service
+  namespace: default
+  labels:
+    app: sre-app
+    team: sre
+  annotations:
+    description: "Exposes SRE Flask app"
+spec:
+  type: LoadBalancer
+  selector:
+    app: sre-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
