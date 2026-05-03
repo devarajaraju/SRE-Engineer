@@ -14,1122 +14,658 @@ and automation for platform reliability.
 ```bash
 # Clone the repo
 git clone https://github.com/devarajaraju/SRE-Engineer.git
-cd SRE-Engineer
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+# 🚀 SRE Engineer Project
 
-Site Reliability Engineering Project | Page 1 of
-SRE Project
-Complete Study Material
-Best Practices, Architecture, Issues &amp; Resolutions
+> Production-grade Site Reliability Engineering project built on AWS — covering CI/CD, Infrastructure as Code, Containerization, Monitoring, Alerting, and Incident Management.
 
-Technologies Covered
+![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=flat&logo=github-actions)
+![Terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC?style=flat&logo=terraform)
+![Docker](https://img.shields.io/badge/Container-Docker-2496ED?style=flat&logo=docker)
+![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-326CE5?style=flat&logo=kubernetes)
+![AWS](https://img.shields.io/badge/Cloud-AWS-FF9900?style=flat&logo=amazon-aws)
+![Prometheus](https://img.shields.io/badge/Monitoring-Prometheus-E6522C?style=flat&logo=prometheus)
+![Grafana](https://img.shields.io/badge/Dashboards-Grafana-F46800?style=flat&logo=grafana)
 
-Category Technologies
-Cloud Infrastructure AWS EC2, Elastic IP, Security Groups, IAM, ECR, EKS
-Infrastructure as Code Terraform, Modules, Remote State, CI/CD Integration
-CI/CD Pipelines GitHub Actions, Jenkins, Docker Build, ECR Push
-Containerization Docker, Dockerfile, AWS ECR, Kubernetes, Helm
-Monitoring &amp; Alerts Prometheus, Node Exporter, Grafana, Slack Alerts
-Application Python Flask, Gunicorn, Nginx, systemd
-Reliability Runbooks, Post-mortems, Smoke Tests, Incident Response
-Source Control GitHub, Branch Protection, CODEOWNERS, PR Templates
+---
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+## 📋 Table of Contents
 
-Site Reliability Engineering Project | Page 2 of
+- [Project Overview](#-project-overview)
+- [Architecture](#-architecture)
+- [Repository Structure](#-repository-structure)
+- [Tech Stack](#-tech-stack)
+- [CI/CD Pipeline](#-cicd-pipeline)
+- [Infrastructure as Code](#-infrastructure-as-code)
+- [Docker and Kubernetes](#-docker-and-kubernetes)
+- [Monitoring and Alerting](#-monitoring-and-alerting)
+- [Incident Management](#-incident-management)
+- [Best Practices](#-best-practices)
+- [Issues and Resolutions](#-issues-and-resolutions)
+- [Key Commands](#-key-commands)
+- [SRE Principles](#-sre-principles)
+- [Quick Start](#-quick-start)
 
-1. Project Overview
-This document covers the complete SRE project built from scratch, including architecture decisions,
-implementation details, best practices, and real issues encountered along with their resolutions.
+---
 
-1.1 Project Goal
-Build a production-grade Site Reliability Engineering project on AWS that demonstrates:
-• End-to-end CI/CD pipeline from code commit to production deployment
-• Infrastructure as Code using Terraform for repeatable provisioning
-• Container-based deployment with Docker and Kubernetes
-• Real-time monitoring and alerting with Prometheus and Grafana
-• Incident management with runbooks, post-mortems, and smoke tests
-• Security best practices with IAM least privilege and branch protection
+## 🎯 Project Overview
 
-1.2 Architecture Overview
+This project demonstrates a complete SRE workflow from infrastructure provisioning to production monitoring. Built entirely on AWS Free Tier, it covers the full spectrum of modern DevOps and reliability engineering practices.
 
-Component Technology Purpose
-Application Python Flask +
-Gunicorn
+### What Was Built
 
-Health check API with /health, /ready, /metrics
-endpoints
+| Category | Details |
+|---|---|
+| **Cloud Infrastructure** | AWS EC2, Elastic IP, Security Groups, IAM, ECR, EKS |
+| **Infrastructure as Code** | Terraform modules, remote state, CI/CD integration |
+| **CI/CD Pipelines** | GitHub Actions with lint, test, docker build, deploy stages |
+| **Containerization** | Docker, AWS ECR, Kubernetes manifests, Helm charts |
+| **Monitoring & Alerts** | Prometheus, Node Exporter, Grafana dashboards, Slack alerts |
+| **Application** | Python Flask, Gunicorn, Nginx, systemd |
+| **Reliability** | Runbooks, post-mortems, smoke tests, incident response |
 
-Web Server Nginx Reverse proxy on port 80, forwards to Flask on
+---
 
-8080
+## 🏗️ Architecture
 
-Cloud Host AWS EC2 t3.micro Free-tier eligible compute instance
-Container Registry AWS ECR Stores Docker images for deployment
-Orchestration Kubernetes + Helm Container orchestration with auto-scaling
-IaC Terraform Provisions EC2, VPC, Security Groups, EKS
-CI/CD GitHub Actions Automated lint, test, build, deploy pipeline
-Monitoring Prometheus + Grafana Metrics collection and visualization
-Alerting Grafana + Slack Real-time incident notifications
-Process Manager systemd Auto-restarts Flask app on EC2
+```
+Internet
+    ↓
+AWS EC2 (t3.micro - Free Tier)
+    ├── Nginx          (port 80)   ← Reverse proxy
+    ├── Flask App      (port 8080) ← Health check API
+    ├── Prometheus     (port 9090) ← Metrics collection
+    ├── Node Exporter  (port 9100) ← System metrics
+    ├── Grafana        (port 3000) ← Dashboards & alerts
+    └── Jenkins        (port 9191) ← CI/CD pipeline
+            ↓
+GitHub Actions CI/CD
+    ├── lint → test → docker → deploy
+    └── terraform plan → terraform apply
+            ↓
+AWS ECR → Docker Images
+            ↓
+AWS EKS → Kubernetes Cluster
+    ├── Deployment (2 replicas)
+    ├── Service (LoadBalancer)
+    └── HPA (auto-scale 2-10 pods)
+```
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+### CI/CD Flow
 
-Site Reliability Engineering Project | Page 3 of
+```
+git push → GitHub Actions
+    ├── Lint (shell, YAML, Terraform, K8s)
+    ├── Smoke Tests
+    ├── Docker Build + ECR Push
+    ├── Deploy to EC2
+    ├── Verify Deployment
+    └── Slack Notification (success/failure)
+```
 
-2. Repository Structure
-The GitHub repository follows a structured layout that separates concerns clearly:
+---
+
+## 📁 Repository Structure
+
+```
 SRE-Engineer/
 ├── .github/
-│ ├── workflows/
-│ │ ├── ci.yml # Main CI/CD pipeline
-│ │ └── terraform.yml # Terraform plan/apply pipeline
-│ ├── ISSUE_TEMPLATE/
-│ │ └── incident.md # Incident issue template
-│ ├── CODEOWNERS # Auto-assign reviewers
-│ └── pull_request_template.md
+│   ├── workflows/
+│   │   ├── ci.yml                  # Main CI/CD pipeline
+│   │   └── terraform.yml           # Terraform plan/apply
+│   ├── ISSUE_TEMPLATE/
+│   │   └── incident.md             # Incident issue template
+│   ├── CODEOWNERS                  # Auto-assign reviewers
+│   └── pull_request_template.md    # PR checklist
 ├── src/
-│ ├── app.py # Flask application
-│ ├── requirements.txt # Python dependencies
-│ └── Dockerfile # Container image definition
+│   ├── app.py                      # Flask application
+│   ├── requirements.txt            # Python dependencies
+│   └── Dockerfile                  # Container image
 ├── infra/
-│ ├── terraform/
-│ │ └── environments/staging/
-│ │ ├── main.tf # EC2, Security Group, EIP
-│ │ ├── eks.tf # EKS cluster, VPC, nodes
-│ │ ├── variables.tf
-│ │ └── outputs.tf
-│ ├── k8s/ # Kubernetes manifests
-│ │ ├── deployment.yaml
-│ │ ├── service.yaml
-│ │ ├── hpa.yaml
-│ │ ├── configmap.yaml
-│ │ └── namespace.yaml
-│ └── helm/sre-app/ # Helm chart
-│ ├── Chart.yaml
-│ ├── values.yaml
-│ └── templates/
+│   ├── terraform/
+│   │   └── environments/staging/
+│   │       ├── main.tf             # EC2, SG, EIP
+│   │       ├── eks.tf              # EKS cluster + VPC
+│   │       ├── variables.tf
+│   │       └── outputs.tf
+│   ├── k8s/                        # Kubernetes manifests
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   ├── hpa.yaml
+│   │   ├── configmap.yaml
+│   │   └── namespace.yaml
+│   └── helm/sre-app/               # Helm chart
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       └── templates/
 ├── monitoring/
-│ ├── alerts/
-│ │ └── slo_alerts.yml # Prometheus alert rules
-│ └── dashboards/ # Grafana dashboard JSON
+│   ├── alerts/
+│   │   └── slo_alerts.yml          # Prometheus alert rules
+│   └── dashboards/                 # Grafana dashboard JSON
 ├── docs/
-│ ├── runbooks/ # Incident runbooks
-│ └── postmortems/ # Post-mortem reports
+│   ├── runbooks/                   # Incident runbooks
+│   └── postmortems/                # Post-mortem reports
 ├── tests/
-│ └── smoke/
-│ └── health_check.sh # Smoke test script
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 4 of
-
-├── Jenkinsfile # Jenkins pipeline
+│   └── smoke/
+│       └── health_check.sh         # Smoke test script
+├── Jenkinsfile                     # Jenkins pipeline
 ├── .gitignore
 └── README.md
+```
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+---
 
-Site Reliability Engineering Project | Page 5 of
+## 🛠️ Tech Stack
 
-3. Flask Application
-3.1 Application Endpoints
+| Tool | Version | Purpose |
+|---|---|---|
+| Python/Flask | 3.11 / 3.x | Health check API |
+| Gunicorn | 21.2.0 | WSGI server |
+| Nginx | 1.24 | Reverse proxy |
+| Docker | 24.x | Containerization |
+| Terraform | 1.5.0 | Infrastructure as Code |
+| Kubernetes | 1.28 | Container orchestration |
+| Helm | 3.x | K8s package manager |
+| Prometheus | 2.45.0 | Metrics collection |
+| Grafana | 10.x | Dashboards and alerts |
+| Node Exporter | 1.6.0 | System metrics |
+| Jenkins | LTS | Enterprise CI/CD |
+| GitHub Actions | - | Cloud CI/CD |
+| AWS EC2 | t3.micro | Compute |
+| AWS ECR | - | Container registry |
+| AWS EKS | 1.28 | Managed Kubernetes |
 
-Endpoint Method Status Code Purpose
-/health GET 200 Liveness check - is the app running?
-/ready GET 200 Readiness check - is the app ready for traffic?
-/metrics GET 200 Basic app metrics for monitoring
-/admin GET 403 Blocked endpoint - returns forbidden
-/debug GET 404 Blocked endpoint - returns not found
+---
 
-3.2 Deployment Stack
-The Flask app runs on EC2 with the following process hierarchy:
-Internet → Nginx (port 80) → Gunicorn (port 8080) → Flask app
-• Nginx acts as a reverse proxy and handles SSL termination
-• Gunicorn runs with 2 workers for concurrent request handling
-• systemd manages the process lifecycle and auto-restarts on failure
-• Virtual environment (venv) isolates Python dependencies
+## 🔄 CI/CD Pipeline
 
-3.3 Best Practices Applied
-• Non-root user in Dockerfile for security
-• Health check defined in Dockerfile for container orchestration
-• Requirements pinned to specific versions for reproducibility
-• Environment variables used for configuration, not hardcoded values
+### Pipeline Stages
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+```
+lint → test → docker → deploy → notify
+```
 
-Site Reliability Engineering Project | Page 6 of
+| Stage | Jobs | When |
+|---|---|---|
+| **lint** | Shell, YAML, Terraform, K8s validation | Every push/PR |
+| **test** | Smoke tests against staging URL | After lint |
+| **docker** | Build image, push to ECR, scan | Main branch only |
+| **deploy** | SCP to EC2, restart service, verify | Main branch only |
+| **notify-success** | Slack message with deploy details | After success |
+| **notify-failure** | Slack message with log link | After failure |
 
-4. CI/CD Pipeline
-4.1 GitHub Actions Pipeline Stages
-The CI/CD pipeline runs automatically on every push to main and staging branches. The pipeline has 6
-stages that run sequentially:
+### Required GitHub Secrets
 
-Stage Jobs When Runs Purpose
-1. lint Shell lint, YAML lint,
-Terraform validate, K8s
-validate
+| Secret | Purpose |
+|---|---|
+| `EC2_HOST` | EC2 public IP address |
+| `EC2_SSH_KEY` | Contents of sre-key.pem |
+| `STAGING_URL` | `http://EC2_IP` |
+| `AWS_ACCESS_KEY_ID` | IAM user access key |
+| `AWS_SECRET_ACCESS_KEY` | IAM user secret key |
+| `SLACK_WEBHOOK_URL` | Slack webhook URL |
 
-Every push/PR Catch syntax errors early
+### Terraform Pipeline
 
-2. test Smoke tests against
-staging URL
+- Triggers only on changes to `infra/terraform/**`
+- Supports `workflow_dispatch` for manual runs
+- `terraform plan` runs on every PR with output commented on PR
+- `terraform apply` runs on merge to main with production approval gate
 
-After lint passes Verify app endpoints respond correctly
+---
 
-3. docker Build image, push to
-ECR, scan for
-vulnerabilities
+## 🏛️ Infrastructure as Code
 
-Main branch only Package app as container
+### Resources Provisioned
 
-4. deploy SCP files to EC2,
-restart service, verify
-deployment
+| Resource | Type | Configuration |
+|---|---|---|
+| EC2 Instance | `aws_instance` | t3.micro, ami-0ff290337e78c83bf |
+| Elastic IP | `aws_eip` | Attached to EC2, persists across restarts |
+| Security Group | `aws_security_group` | Ports 22, 80, 443, 3000, 9090 |
+| VPC | `aws_vpc` | CIDR 10.0.0.0/16, DNS enabled |
+| Subnets | `aws_subnet` | Two public subnets in different AZs |
+| EKS Cluster | `aws_eks_cluster` | Kubernetes 1.28 |
+| EKS Node Group | `aws_eks_node_group` | t3.micro, min 1 max 3 nodes |
 
-Main branch only Deploy to staging server
+### Usage
 
-5. notify-
-success
+```bash
+cd infra/terraform/environments/staging
 
-Send Slack message
-with deploy details
+terraform init
+terraform plan
+terraform apply
+terraform destroy   # when done to avoid costs
+```
 
-After deploy
-succeeds
+### IAM Permissions Required
 
-Alert team of success
+```
+AmazonEC2FullAccess
+AmazonS3FullAccess
+AmazonEKSClusterPolicy
+AmazonEC2ContainerRegistryFullAccess
+IAMFullAccess
+```
 
-6. notify-
-failure
+---
 
-Send Slack message
-with log link
+## 🐳 Docker and Kubernetes
 
-After deploy fails Alert team of failure
+### Flask App Endpoints
 
-4.2 Required GitHub Secrets
+| Endpoint | Status Code | Purpose |
+|---|---|---|
+| `/health` | 200 | Liveness check |
+| `/ready` | 200 | Readiness check |
+| `/metrics` | 200 | App metrics |
+| `/admin` | 403 | Blocked endpoint |
+| `/debug` | 404 | Blocked endpoint |
 
-Secret Name Value Used In
-EC2_HOST EC2 public IP address deploy job - SSH connection
-EC2_SSH_KEY Contents of sre-key.pem deploy job - SSH authentication
-STAGING_URL http://EC2_IP test job - smoke test target
-AWS_ACCESS_KEY_I
-D
+### Dockerfile Highlights
 
-IAM user access key docker + terraform jobs
-
-AWS_SECRET_ACCE
-SS_KEY
-
-IAM user secret key docker + terraform jobs
-
-SLACK_WEBHOOK_U
-RL
-
-Slack webhook URL notify jobs - Slack messages
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 7 of
-
-4.3 Terraform CI/CD Pipeline
-A separate workflow handles Infrastructure as Code changes:
-• Triggers only when files under infra/terraform/** change
-• Supports manual workflow_dispatch trigger for on-demand runs
-• terraform plan runs on every PR and comments the plan output
-• terraform apply runs on merge to main with production environment approval gate
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 8 of
-
-5. Terraform Infrastructure as Code
-5.1 Resources Provisioned
-
-Resource Type Configuration
-EC2 Instance aws_instance t3.micro, ami-0ff290337e78c83bf, sre-key pair
-Elastic IP aws_eip Attached to EC2, persists across restarts
-Security Group aws_security_group Ports 22, 80, 443, 3000, 9090 open
-VPC aws_vpc CIDR 10.0.0.0/16, DNS enabled
-Subnets aws_subnet Two public subnets in different AZs
-Internet Gateway aws_internet_gateway Enables public internet access
-EKS Cluster aws_eks_cluster Kubernetes 1.28, sre-staging-cluster
-EKS Node Group aws_eks_node_group t3.micro nodes, min 1 max 3
-
-5.2 Best Practices
-• Profile removed from provider block for CI/CD compatibility - credentials injected via
-environment variables
-• Remote state stored in S3 with use_lockfile for state locking (dynamodb_table is deprecated)
-• Resources tagged with Name, Environment, ManagedBy, Team for cost allocation
-• Separate files for main.tf, variables.tf, outputs.tf, eks.tf for maintainability
-• terraform fmt enforced in CI/CD to maintain consistent formatting
-• .terraform/ directory excluded from git via .gitignore
-
-5.3 IAM Permissions Required
-The sre-terraform-user IAM user requires these policies:
-• AmazonEC2FullAccess - for EC2, security groups, VPC
-• AmazonS3FullAccess - for Terraform remote state
-• AmazonEKSClusterPolicy - for EKS cluster creation
-• AmazonEC2ContainerRegistryFullAccess - for ECR operations
-• IAMFullAccess - for creating EKS IAM roles
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 9 of
-
-6. Docker and Kubernetes
-6.1 Docker Image
-The Flask app is containerized using a multi-layer Dockerfile optimized for size and security:
-FROM python:3.11-slim # Minimal base image
+```dockerfile
+FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt # Cached layer
+RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
-RUN useradd --no-create-home appuser &amp;&amp; chown -R appuser /app
-USER appuser # Non-root for security
+RUN useradd --no-create-home appuser && chown -R appuser /app
+USER appuser                          # Non-root for security
 HEALTHCHECK CMD curl -f http://localhost:8080/health || exit 1
-CMD [&quot;gunicorn&quot;, &quot;--workers&quot;, &quot;2&quot;, &quot;--bind&quot;, &quot;0.0.0.0:8080&quot;, &quot;app:app&quot;]
+CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:8080", "app:app"]
+```
 
-6.2 Kubernetes Manifests
+### Kubernetes Manifests
 
-File Kind Key Configuration
-deployment.yaml Deployment 2 replicas, RollingUpdate, liveness/readiness
+| File | Kind | Key Config |
+|---|---|---|
+| `deployment.yaml` | Deployment | 2 replicas, RollingUpdate, probes |
+| `service.yaml` | Service | LoadBalancer, port 80→8080 |
+| `hpa.yaml` | HorizontalPodAutoscaler | Min 2, max 10, scale at 70% CPU |
+| `configmap.yaml` | ConfigMap | APP_VERSION, ENVIRONMENT |
+| `namespace.yaml` | Namespace | Isolated sre namespace |
 
-probes
+### Deploy with Helm
 
-service.yaml Service LoadBalancer type, port 80 -&gt; 8080
-hpa.yaml HorizontalPodAutoscale
+```bash
+# Install
+helm install sre-app infra/helm/sre-app --namespace default
 
-r
+# Upgrade
+helm upgrade sre-app infra/helm/sre-app --set image.tag=NEW_TAG
 
-Min 2, max 10 pods, scale at 70% CPU
-configmap.yaml ConfigMap APP_VERSION, ENVIRONMENT, LOG_LEVEL
-namespace.yaml Namespace Isolated sre namespace
-resourcequota.yaml ResourceQuota CPU 2/4, Memory 2Gi/4Gi limits
+# Rollback
+helm rollback sre-app 1
 
-6.3 Helm Chart
-The Kubernetes manifests are packaged as a Helm chart for reusable deployments across
-environments:
-• values.yaml contains all configurable parameters
-• Templates use Go template syntax for dynamic values
-• HPA template conditionally rendered with {{- if .Values.autoscaling.enabled }}
-• helm upgrade --install enables idempotent deployments
-• helm rollback provides instant rollback to previous release
+# Uninstall
+helm uninstall sre-app
+```
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+### Local Testing with Minikube
 
-Site Reliability Engineering Project | Page 10 of
+```bash
+eval $(minikube docker-env)
+docker build -t sre-app:latest src/
+kubectl apply -f infra/k8s/
+kubectl get pods
+minikube service sre-app-service --url
+```
 
-7. Monitoring and Alerting
-7.1 Prometheus Configuration
-Prometheus scrapes metrics from three targets every 15 seconds:
+---
 
-Job Target Metrics Collected
-prometheus localhost:9090 Prometheus self-monitoring metrics
-sre-app localhost:8080 Flask app health and custom metrics
-node_exporter localhost:9100 CPU, memory, disk, network system metrics
+## 📊 Monitoring and Alerting
 
-7.2 Grafana Dashboard Panels
+### Prometheus Targets
 
-Panel Query Visualization
-App Health Status up{job=&quot;sre-app&quot;} Stat with green/red value mapping
-CPU Usage % 100 -
+| Job | Target | Metrics |
+|---|---|---|
+| `prometheus` | localhost:9090 | Self-monitoring |
+| `sre-app` | localhost:8080 | App health metrics |
+| `node_exporter` | localhost:9100 | CPU, memory, disk, network |
 
-(avg(rate(node_cpu_seconds_total
-{mode=&quot;idle&quot;}[5m])) * 100)
+### Grafana Dashboard Panels
 
-Time series with thresholds
+| Panel | Visualization |
+|---|---|
+| App Health Status | Stat — green/red |
+| CPU Usage % | Time series with thresholds |
+| Memory Usage % | Gauge 0-100% |
+| Disk Usage % | Gauge with 70%/90% thresholds |
+| Network Traffic | Time series (inbound/outbound) |
+| System Uptime | Stat with duration |
 
-Memory Usage % (node_memory_MemTotal_bytes -
-node_memory_MemAvailable_byt
-es) /
-node_memory_MemTotal_bytes *
-100
+### Alert Rules
 
-Gauge 0-100%
+| Alert | Condition | Severity |
+|---|---|---|
+| AppDown | `up{job="sre-app"} == 0` for 1m | Critical |
+| HighErrorRate | Error rate > 5% for 2m | Critical |
+| HighCPUUsage | CPU > 85% for 5m | Warning |
+| HighMemoryUsage | Memory > 85% for 5m | Warning |
+| LowDiskSpace | Disk > 80% for 10m | Warning |
 
-Disk Usage % 100 -
+### Access URLs
 
-(node_filesystem_avail_bytes /
-node_filesystem_size_bytes * 100)
+| Service | URL |
+|---|---|
+| Flask App | `http://YOUR_EC2_IP/health` |
+| Grafana | `http://YOUR_EC2_IP:3000` |
+| Prometheus | `http://YOUR_EC2_IP:9090` |
+| Jenkins | `http://YOUR_EC2_IP:9191` |
 
-Gauge with 70%/90% thresholds
+---
 
-Network Traffic rate(node_network_receive_bytes
+## 🚨 Incident Management
 
-_total[5m])
+### Severity Levels
 
-Time series, dual query
-inbound/outbound
+| Severity | Response Time | Definition |
+|---|---|---|
+| SEV-1 | 5 minutes | Complete outage or data loss |
+| SEV-2 | 30 minutes | Partial degradation |
+| SEV-3 | 2 hours | Minor issue with workaround |
 
-System Uptime node_time_seconds -
-node_boot_time_seconds
+### Incident Response Flow
 
-Stat with duration unit
-
-7.3 Alert Rules
-
-Alert Name Condition Severity Runbook
-AppDown up{job=&quot;sre-app&quot;} == 0
-
-for 1m
-
-Critical docs/runbooks/app_down.md
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 11 of
-
-HighErrorRate error rate &gt; 5% for 2m Critical docs/runbooks/high_error_rate.m
-
-d
-
-HighCPUUsage CPU &gt; 85% for 5m Warning docs/runbooks/high_cpu.md
-HighMemoryUsage Memory &gt; 85% for 5m Warning docs/runbooks/high_memory.md
-LowDiskSpace Disk &gt; 80% for 10m Warning docs/runbooks/disk_full.md
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 12 of
-
-8. Incident Management
-8.1 Severity Levels
-
-Severity Response Time Definition Example
-SEV-1 5 minutes Complete service outage or
-
-data loss
-
-App completely down, all health
-checks failing
-
-SEV-2 30 minutes Partial degradation affecting
-
-users
-
-Error rate above 5%, latency
-above 2 seconds
-
-SEV-3 2 hours Minor issue with workaround
-
-available
-
-Single endpoint slow, non-critical
-alert firing
-
-8.2 Incident Response Flow
-When an alert fires in Grafana or Prometheus, the following steps are taken:
+```
 Alert fires in Prometheus
-↓
-Grafana sends notification to Slack #sre-alerts channel
-↓
-On-call engineer acknowledges within SLA time
-↓
+    ↓
+Grafana sends Slack notification to #sre-alerts
+    ↓
+On-call engineer acknowledges within SLA
+    ↓
 Opens GitHub Issue using incident template
-↓
+    ↓
 Follows runbook in docs/runbooks/
-↓
-Triggers incident_response.yml workflow if needed
-(Options: restart-app, rollback-deploy, run-diagnostics)
-↓
-Smoke tests verify recovery automatically
-↓
-Write blameless post-mortem in docs/postmortems/
-
-8.3 Runbook Structure
-Each runbook in docs/runbooks/ follows this standard format:
-• Alert name, severity, and affected server at the top
-• Symptoms section describing what the user sees
-• Diagnosis steps with exact commands to run
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 13 of
-• Remediation options ordered from fastest to most invasive
-• Escalation path with names and contact details
-• Links to related dashboards and post-mortems
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 14 of
-
-9. Best Practices
-9.1 GitHub Best Practices
-
-Practice Implementation Benefit
-Branch protection Required PR reviews, status
-checks, no force push on main
-
-Prevents broken code reaching
-production
-
-CODEOWNERS .github/CODEOWNERS maps
-paths to team owners
-
-Auto-assigns correct reviewers
-
-PR templates Checklist with summary, testing,
-SLO impact, rollback plan
-
-Consistent, thorough change reviews
-
-Issue templates Incident template with timeline
-
-and checklist
-
-Structured incident tracking
-
-.gitignore Excludes .terraform/, *.tfstate,
-venv/, __pycache__
-
-Prevents secrets and binaries in repo
-Semantic commits feat:, fix:, chore:, docs: prefixes Clear change history and changelogs
-
-9.2 AWS Security Best Practices
-• Never use root user access keys - create dedicated IAM users with least privilege
-• Use IAM roles for EC2 instances instead of storing credentials on the server
-• Use OIDC for GitHub Actions instead of long-lived access keys
-• Store secrets in GitHub Secrets, never hardcode in code or config files
-• Elastic IP prevents IP changes on instance restart, critical for stable DNS
-• Security group rules follow principle of least privilege
-
-9.3 Docker Best Practices
-• Use slim base images to reduce attack surface and image size
-• Run containers as non-root users for security
-• Copy requirements.txt before source code to leverage layer caching
-• Add HEALTHCHECK instruction so orchestrators know when container is ready
-• Use .dockerignore to exclude unnecessary files from build context
-• Pin base image versions for reproducible builds
-
-9.4 Kubernetes Best Practices
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 15 of
-• Always define resource requests and limits to prevent noisy neighbors
-• Use both liveness and readiness probes for proper traffic management
-• Set RollingUpdate strategy with maxUnavailable=0 for zero-downtime deployments
-• Use HPA for auto-scaling based on CPU and memory metrics
-• Define ResourceQuota per namespace to prevent resource exhaustion
-• Use ConfigMaps for non-sensitive configuration, Secrets for sensitive data
-
-9.5 Terraform Best Practices
-• Use remote state with locking to prevent concurrent modifications
-• Tag all resources for cost tracking and resource identification
-• Separate files by concern: main.tf, variables.tf, outputs.tf
-• Run terraform fmt in CI/CD to enforce consistent formatting
-• Use data sources instead of hardcoded AMI IDs for portability
-• Never commit .terraform/ directory or .tfstate files to git
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 16 of
-
-10. Issues Faced and Resolutions
-10.1 GitHub and Git Issues
-
-Issue Root Cause Resolution
-fatal: pathspec
-&#39;https://github.com/...&#39; did not
-match any files
-
-Passed URL to git add
-instead of file path
-
-Use git add . for files, URL only goes
-in git remote add or git clone
-
-error: failed to push - tip of
-branch is behind remote
-
-Remote has commits not in
-local branch
-
-Run git pull origin branch before git
-push
-
-Large file rejected -
-.terraform/ provider binary
-648MB
-
-Accidentally committed
-.terraform/ directory
-
-Add .terraform/ to .gitignore, use git
-filter-repo to remove from history
-
-main and SRE branches
-have entirely different
-histories
-
-Branches created
-independently without
-common ancestor
-
-Use git push origin SRE:main --force
-to make SRE the new main
-
-fatal: &#39;origin&#39; does not appear
-to be a git repository
-
-git filter-repo removes remote
-configuration
-
-Re-add with git remote add origin
-https://USERNAME:TOKEN@github.
-com/repo.git
-
-10.2 AWS EC2 Issues
-
-Issue Root Cause Resolution
-Permission denied
-(publickey) on SSH
-
-Wrong key file name or
-wrong IP after restart
-
-Use correct .pem file, check current
-IP in EC2 console, chmod 400 key
-
-Error establishing SSH
-connection
-
-Security group blocking port
-22 or instance stopped
-
-Start instance, add SSH inbound rule
-0.0.0.0/0, try EC2 Instance Connect
-
-Connection timeout on port
-22 from GitHub Actions
-
-Security group only allows
-My IP, not GitHub runner IPs
-
-Set SSH inbound rule source to
-0.0.0.0/0 for CI/CD to work
-
-New IP generated after EC2
-stop/start
-
-No Elastic IP attached Attach Elastic IP - free when attached
-to running instance, IP never changes
-
-curl http://IP/health returns
-404 Not Found
-
-Nginx not configured or
-default site enabled
-
-Remove /etc/nginx/sites-
-enabled/default, create correct sre-
-app config
-
-10.3 Flask Application Issues
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 17 of
-Issue Root Cause Resolution
-gunicorn.errors.HaltServer:
-Worker failed to boot
-
-SyntaxError in app.py from
-heredoc pollution
-
-Recreate app.py using nano editor,
-not cat &lt;&lt; EOF command
-
-error: externally-managed-
-environment for pip install
-
-Ubuntu 22.04+ protects
-system Python
-
-Create virtual environment with
-python3 -m venv venv, use
-venv/bin/pip
-
-Failed to connect to localhost
-port 8080
-
-sre-app.service not created
-or failed to start
-
-Check journalctl -u sre-app, verify
-gunicorn path in service file is correct
-
-SyntaxError: invalid syntax -
-cat &gt; file &lt;&lt; EOF
-
-Shell heredoc command
-written inside Python file
-
-Never use cat EOF in terminal for
-Python files, use nano instead
-
-systemd service Unit not
-found
-
-Service file created in wrong
-location or not loaded
-
-Create in /etc/systemd/system/, run
-daemon-reload, then enable and start
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 18 of
-
-10.4 GitHub Actions Pipeline Issues
-
-Issue Root Cause Resolution
-Smoke tests return 000 -
-connection refused
-
-GitHub Actions runner IP
-blocked by security group
-
-Open port 80 inbound to 0.0.0.0/0 in
-security group
-
-actions/upload-artifact
-deprecated v3 error
-
-Using deprecated version of
-GitHub Action
-
-Update all action versions:
-checkout@v4, upload-artifact@v4,
-configure-aws-credentials@v4
-
-Invalid workflow file - &#39;on&#39;
-already defined
-
-Duplicate on:, env:, jobs:
-sections in YAML
-
-Delete and recreate file with nano,
-verify with grep -n &#39;^on:\|^env:\|^jobs:&#39;
-
-YAML syntax error on line
-207
-
-notify-success job missing 2-
-space indentation
-
-All jobs under jobs: must have exactly
-2 spaces indent
-
-aws: error parsing parameter
---image-id imageT
-
-Line continuation backslash
-breaking CLI parameter
-
-Put entire aws ecr command on
-single line without backslash breaks
-
-Terraform fmt exit code 3 Formatting errors in main.tf -
-
-wrong indentation
-
-Run terraform fmt locally to auto-fix,
-then commit the formatted file
-
-10.5 Terraform Issues
-
-Issue Root Cause Resolution
-No valid credential sources -
-profile sre-terraform not
-found
-
-Local AWS profile not
-available in GitHub Actions
-environment
-
-Remove profile from provider block,
-use AWS_ACCESS_KEY_ID and
-AWS_SECRET_ACCESS_KEY
-secrets
-
-The parameter
-dynamodb_table is
-deprecated
-
-AWS provider updated - old
-parameter name
-
-Replace dynamodb_table with
-use_lockfile = true in backend block
-
-InvalidGroup.Duplicate -
-security group already exists
-
-Terraform trying to create
-existing security group
-
-Import with terraform import or use
-new name like sre-staging-sg-tf-v2
-
-InvalidParameterCombination
-- instance type not free tier
-
-AMI ami-0c7217cdde317cfec
-not eligible for t2.micro
-
-Use ami-0ff290337e78c83bf with
-t3.micro for free tier
-
-Error: resource address does
-not exist in configuration
-
-Ran terraform import before
-adding resource block
-
-Add the resource block to main.tf first,
-then run terraform import
-
-AccessDenied:
-iam:CreateRole not
-authorized
-
-sre-terraform-user missing
-IAM permissions
-
-Attach IAMFullAccess policy to the
-IAM user
-
-10.6 Docker and ECR Issues
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 19 of
-Issue Root Cause Resolution
-AccessDeniedException:
-ecr:CreateRepository not
-authorized
-
-sre-terraform-user missing
-ECR permissions
-
-Attach
-AmazonEC2ContainerRegistryFullAc
-cess policy to IAM user
-
-Exiting due to
-SVC_UNREACHABLE - no
-running pod for service
-
-Pods in ImagePullBackOff
-state - cannot pull ECR
-image in Minikube
-
-Build image locally with eval
-$(minikube docker-env) and set
-imagePullPolicy: Never
-
-error parsing
-deployment.yaml - did not
-find expected key
-
-Wrong indentation on ports:
-field (7 spaces instead of 10)
-
-Fix indentation - ports: must align with
-other container properties
-
-deployment.yaml mapping
-values not allowed error
-
-Leading --- document
-separator causing YAML
-parser issues
-
-Remove --- from top of K8s manifest
-files
-
-docker: port 8080 address
-already in use
-
-Another process (Jenkins
-service) already using port
-8080
-
-Kill with fuser -k 8080/tcp or run
-Jenkins on different port 9191
-
-10.7 Jenkins Issues
-
-Issue Root Cause Resolution
-GPG error - public key not
-available for Jenkins apt repo
-
-Jenkins GPG key added
-incorrectly with wget instead
-of curl+gpg
-
-Use curl | sudo gpg --dearmor to
-properly add the key
-
-Jenkins pipeline not feasible
-on free tier EC2
-
-t3.micro insufficient memory
-for Jenkins + Docker + builds
-
-Use Docker-in-Docker approach or
-skip Jenkins on free tier, use GitHub
-Actions instead
-
-Container name jenkins
-already in use
-
-Previous Docker container
-still exists
-
-Run docker stop jenkins and docker
-rm jenkins before creating new
-container
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 20 of
-
-11. Key Commands Reference
-11.1 Git Commands
-
-Command Purpose
-git status Check staged/unstaged changes
-git add . &amp;&amp; git commit -m &#39;msg&#39; &amp;&amp; git push origin
-main
-
-Stage, commit, push all changes
-git commit --allow-empty -m &#39;ci: retrigger&#39; Retrigger CI pipeline without code change
-git switch -c feature/branch-name Create and switch to new branch
-git pull origin main --allow-unrelated-histories Merge branches with different histories
-git push origin SRE:main --force Make SRE branch the new main branch
-git remote set-url origin
-https://USER:TOKEN@github.com/repo.git
-
-Update remote URL with credentials
-
-11.2 AWS CLI Commands
-
-Command Purpose
-aws sts get-caller-identity Verify AWS credentials are working
-aws configure --profile sre-terraform Configure named AWS profile
-aws ec2 describe-instances --output table List EC2 instances in table format
-aws ecr create-repository --repository-name sre-
-app
-
-Create ECR container registry
-
-aws ecr get-login-password | docker login --
-username AWS --password-stdin ECR_URI
-
-Login to ECR for Docker push
-
-aws eks update-kubeconfig --name sre-staging-
-cluster --region us-east-1
-
-Configure kubectl for EKS cluster
-
-aws iam attach-user-policy --user-name USER --
-policy-arn POLICY_ARN
-
-Attach IAM policy to user
-
-11.3 Terraform Commands
-
-Command Purpose
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 21 of
-terraform init Initialize providers and backend
-terraform validate Check configuration syntax
-terraform fmt Auto-format all .tf files
-terraform plan Preview changes before applying
-terraform apply Create/update infrastructure
-terraform destroy Destroy all managed infrastructure
-terraform state list List all resources in state
-terraform import RESOURCE_TYPE.NAME ID Import existing resource into state
-
-11.4 Kubernetes Commands
-
-Command Purpose
-kubectl get pods -o wide List pods with node and IP details
-kubectl describe pod POD_NAME Full pod details including events
-kubectl logs -l app=sre-app --tail=50 View logs from all matching pods
-kubectl apply -f infra/k8s/ Apply all manifests in directory
-kubectl rollout status deployment/sre-app Watch deployment rollout progress
-kubectl scale deployment sre-app --replicas=3 Manually scale deployment
-helm install sre-app infra/helm/sre-app Deploy Helm chart
-helm rollback sre-app 1 Rollback to previous Helm release
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 22 of
-
-12. SRE Principles Applied
-12.1 The Four Golden Signals
-This project monitors all four golden signals defined by Google SRE:
-
-Signal What It Measures How Monitored in This Project
-Latency Time to serve a request HTTP response time via Prometheus histogram
-Traffic Demand on the system Request rate via http_requests_total counter
-Errors Rate of failed requests 5xx response rate as percentage of total traffic
-Saturation How full the service is CPU, memory, disk usage via Node Exporter
-
-12.2 SLO and Error Budget
-Service Level Objectives defined for this project:
-
-SLO Target Measurement Window
-Availability 99.9% uptime Rolling 30 days
-Error rate &lt; 1% of requests return 5xx Rolling 5 minutes
-P99 latency &lt; 200ms for /health endpoint Rolling 5 minutes
-Deployment success 100% smoke tests pass Per deployment
-
-12.3 Toil Reduction
-Manual toil was reduced through automation throughout the project:
-• Auto-deploy on git push eliminates manual deployment steps
-• Smoke tests run automatically after every deployment
-• Prometheus alerts fire automatically when thresholds breached
-• Terraform provisions infrastructure reproducibly without manual AWS console steps
-• GitHub Actions handles all CI tasks without manual intervention
-• systemd auto-restarts Flask app on crash without human intervention
-
-12.4 Blameless Post-mortems
-Post-mortems stored in docs/postmortems/ follow blameless culture:
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 23 of
-
-• Focus on systems and processes, not individuals
-• Timeline reconstructed from logs and monitoring data
-• Root cause analysis identifies contributing factors
-• Action items assigned to fix systemic issues
-• Lessons learned shared with the team
-
-SRE Project Study Material | Complete Guide &amp; Best Practices
-
-Site Reliability Engineering Project | Page 24 of
-
-13. Interview Preparation
-13.1 Common SRE Interview Questions
-
-Question Key Points to Cover
-Explain your CI/CD pipeline lint → test → docker build → ECR push → EC2 deploy → smoke
-test → Slack notify. Automated on push, manual approval for
+    ↓
+Triggers incident_response.yml (restart/rollback/diagnostics)
+    ↓
+Smoke tests verify recovery
+    ↓
+Blameless post-mortem written in docs/postmortems/
+```
+
+### Available Runbooks
+
+| Runbook | Alert |
+|---|---|
+| `docs/runbooks/app_down.md` | AppDown |
+| `docs/runbooks/high_cpu.md` | HighCPUUsage |
+| `docs/runbooks/high_memory.md` | HighMemoryUsage |
+| `docs/runbooks/high_error_rate.md` | HighErrorRate |
+| `docs/runbooks/disk_full.md` | LowDiskSpace |
+
+---
+
+## ✅ Best Practices
+
+### GitHub
+
+- Branch protection on `main` — required reviews, status checks, no force push
+- `CODEOWNERS` auto-assigns reviewers by directory
+- PR template includes summary, testing, SLO impact, rollback plan
+- Semantic commit messages: `feat:`, `fix:`, `chore:`, `docs:`
+
+### AWS Security
+
+- Never use root user access keys — dedicated IAM user with least privilege
+- Secrets stored in GitHub Secrets, never hardcoded
+- Elastic IP prevents IP changes on restart
+- Security group follows principle of least privilege
+
+### Docker
+
+- Slim base image reduces attack surface
+- Non-root user in container
+- Layer caching via requirements.txt first
+- `HEALTHCHECK` for orchestrator integration
+- `.dockerignore` excludes unnecessary files
+
+### Kubernetes
+
+- Resource requests and limits on all containers
+- Both liveness and readiness probes defined
+- `RollingUpdate` with `maxUnavailable: 0` for zero-downtime
+- HPA for automatic scaling
+- ResourceQuota per namespace
+
+### Terraform
+
+- Remote state with S3 + `use_lockfile`
+- All resources tagged for cost tracking
+- `terraform fmt` enforced in CI/CD
+- `.terraform/` and `*.tfstate` excluded from git
+
+---
+
+## 🐛 Issues and Resolutions
+
+### Git Issues
+
+| Issue | Resolution |
+|---|---|
+| `fatal: pathspec 'https://github.com/...'` | URL goes in `git remote add`, not `git add` |
+| Push rejected — branch behind remote | Run `git pull origin branch` before push |
+| `.terraform/` 648MB file rejected by GitHub | Add to `.gitignore`, use `git filter-repo` to remove history |
+| Branches have entirely different histories | `git push origin SRE:main --force` |
+| `fatal: 'origin' does not appear to be a git repository` | Re-add with `git remote add origin URL` after filter-repo |
+
+### AWS EC2 Issues
+
+| Issue | Resolution |
+|---|---|
+| `Permission denied (publickey)` | Use correct `.pem` file, `chmod 400`, check current EC2 IP |
+| SSH connection timeout from GitHub Actions | Set SSH inbound rule to `0.0.0.0/0` — runner IPs change every run |
+| IP changes after EC2 stop/start | Attach Elastic IP — free when attached, never changes |
+| Nginx returning 404 | Remove `/etc/nginx/sites-enabled/default`, configure `sre-app` site |
+
+### Flask Application Issues
+
+| Issue | Resolution |
+|---|---|
+| `gunicorn HaltServer: Worker failed to boot` | Recreate `app.py` with `nano` — heredoc polluted the file |
+| `externally-managed-environment` pip error | Use `python3 -m venv venv` and install inside venv |
+| `Failed to connect to localhost port 8080` | Check `journalctl -u sre-app`, verify gunicorn path in service file |
+| `SyntaxError` — `cat > file << EOF` inside Python | Never use shell heredoc for Python files — use `nano` |
+
+### GitHub Actions Issues
+
+| Issue | Resolution |
+|---|---|
+| Smoke tests return `000` | Open port 80 inbound to `0.0.0.0/0` in security group |
+| `actions/upload-artifact v3` deprecated | Update to `@v4` across all actions |
+| `Invalid workflow file — 'on' already defined` | Delete and recreate file, check with `grep -n '^on:\|^env:\|^jobs:'` |
+| YAML syntax error — notify job | All jobs under `jobs:` need exactly 2 spaces indent |
+| `aws: error parsing --image-id imageT` | Put entire `aws ecr` command on single line, no backslash breaks |
+| `terraform fmt` exit code 3 | Run `terraform fmt` locally, commit formatted file |
+
+### Terraform Issues
+
+| Issue | Resolution |
+|---|---|
+| `profile sre-terraform not found` in CI | Remove `profile` from provider block, use GitHub Secrets for credentials |
+| `dynamodb_table is deprecated` | Replace with `use_lockfile = true` |
+| `InvalidGroup.Duplicate` security group exists | Import with `terraform import` or use new name |
+| `instance type not free tier eligible` | Use `t3.micro` with `ami-0ff290337e78c83bf` |
+| `AccessDenied: iam:CreateRole` | Attach `IAMFullAccess` policy to IAM user |
+
+### Docker and Kubernetes Issues
+
+| Issue | Resolution |
+|---|---|
+| `AccessDeniedException: ecr:CreateRepository` | Attach `AmazonEC2ContainerRegistryFullAccess` to IAM user |
+| `SVC_UNREACHABLE — no running pod` | Build with `eval $(minikube docker-env)`, set `imagePullPolicy: Never` |
+| `error parsing deployment.yaml — did not find expected key` | Fix indentation — `ports:` must align with other container properties |
+| `mapping values not allowed` in deployment.yaml | Remove `---` document separator from top of K8s files |
+| `port 8080 already in use` | Kill with `fuser -k 8080/tcp`, run Jenkins on port 9191 |
+
+### Jenkins Issues
+
+| Issue | Resolution |
+|---|---|
+| `GPG error — public key not available` | Use `curl \| sudo gpg --dearmor` to add key correctly |
+| Jenkins not feasible on free tier | t3.micro has insufficient memory — use GitHub Actions instead |
+| `container name jenkins already in use` | Run `docker stop jenkins && docker rm jenkins` first |
+
+---
+
+## ⌨️ Key Commands
+
+### Git
+
+```bash
+git status
+git add . && git commit -m "feat: description" && git push origin main
+git commit --allow-empty -m "ci: retrigger pipeline"
+git switch -c feature/branch-name
+git pull origin main --allow-unrelated-histories
+git push origin SRE:main --force
+```
+
+### AWS CLI
+
+```bash
+aws sts get-caller-identity
+aws configure --profile sre-terraform
+aws ec2 describe-instances --output table
+aws ecr create-repository --repository-name sre-app --region us-east-1
+aws eks update-kubeconfig --name sre-staging-cluster --region us-east-1
+aws iam attach-user-policy --user-name USER --policy-arn POLICY_ARN
+```
+
+### Terraform
+
+```bash
+terraform init
+terraform validate
+terraform fmt
+terraform plan
 terraform apply
+terraform destroy
+terraform state list
+terraform import RESOURCE_TYPE.NAME ID
+```
 
-How do you handle incidents? Severity levels, runbooks, GitHub Issues for tracking, post-
-mortems, Slack alerts, incident_response.yml workflow for
-automated remediation
+### Kubernetes
 
-What is an SLO and error budget? SLO = target reliability percentage. Error budget = allowed
-downtime. When budget exhausted, freeze feature work until
-reliability restored
+```bash
+kubectl get pods -o wide
+kubectl describe pod POD_NAME
+kubectl logs -l app=sre-app --tail=50
+kubectl apply -f infra/k8s/
+kubectl rollout status deployment/sre-app
+kubectl scale deployment sre-app --replicas=3
+helm install sre-app infra/helm/sre-app
+helm rollback sre-app 1
+```
 
-Explain Infrastructure as Code Terraform manages all AWS resources. State in S3. Plan in CI
-on PR, apply on merge. Reproducible, version controlled, peer
-reviewed
+### EC2 Service Management
 
-How do you monitor your
-services?
+```bash
+sudo systemctl status sre-app
+sudo systemctl restart sre-app
+sudo systemctl restart nginx
+sudo journalctl -u sre-app -n 50
+sudo docker ps
+sudo docker logs jenkins
+```
 
-Prometheus scrapes metrics every 15s. Grafana visualizes
-golden signals. Alerts fire to Slack. Node Exporter for system
-metrics
+---
 
-What is your rollback strategy? helm rollback for K8s, git revert + push for code, terraform apply
+## 📐 SRE Principles
 
-previous state for infra. Smoke tests verify recovery
-How do you manage secrets? GitHub Secrets for CI/CD, no secrets in code, IAM roles
-preferred over access keys, Vault for production
+### Four Golden Signals
 
-13.2 Project Highlights for Resume
+| Signal | Metric | How Monitored |
+|---|---|---|
+| **Latency** | Request response time | HTTP response duration histogram |
+| **Traffic** | Requests per second | `http_requests_total` counter |
+| **Errors** | 5xx response rate | Error % of total traffic |
+| **Saturation** | Resource utilization | CPU, memory, disk via Node Exporter |
 
-Achievement Technologies
-Built end-to-end CI/CD pipeline with
-automated testing and deployment
+### SLO Targets
 
-GitHub Actions, Docker, AWS ECR, EC2
+| SLO | Target | Window |
+|---|---|---|
+| Availability | 99.9% uptime | Rolling 30 days |
+| Error rate | < 1% requests return 5xx | Rolling 5 minutes |
+| P99 latency | < 200ms for /health | Rolling 5 minutes |
+| Deploy success | 100% smoke tests pass | Per deployment |
 
-Provisioned cloud infrastructure as code
-with remote state management
+---
 
-Terraform, AWS S3, EKS, VPC
+## 🚀 Quick Start
 
-Deployed containerized application to
-Kubernetes with auto-scaling
+### Prerequisites
 
-Docker, AWS EKS, Helm, HPA
+```bash
+# Mac
+brew install terraform kubectl helm eksctl awscli
 
-Implemented real-time monitoring with
-custom dashboards and alerting
+# Verify
+terraform --version && kubectl version --client && helm version
+```
 
-Prometheus, Grafana, Slack, Node Exporter
+### Clone and Setup
 
-Built incident management system with
-runbooks and post-mortems
+```bash
+git clone https://github.com/YOUR_USERNAME/SRE-Engineer.git
+cd SRE-Engineer
+```
 
-GitHub Issues, GitHub Actions workflows
+### Run Smoke Tests
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+```bash
+chmod +x tests/smoke/health_check.sh
+BASE_URL=http://YOUR_EC2_IP ./tests/smoke/health_check.sh
+```
 
-Site Reliability Engineering Project | Page 25 of
+### Provision Infrastructure
 
-Resolved 30+ real-world DevOps and SRE
-issues during implementation
+```bash
+cd infra/terraform/environments/staging
+terraform init
+terraform plan
+terraform apply
+```
 
-All technologies above
+### Deploy to Kubernetes
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+```bash
+eval $(minikube docker-env)
+docker build -t sre-app:latest src/
+kubectl apply -f infra/k8s/
+kubectl get pods
+curl $(minikube service sre-app-service --url)/health
+```
 
-Site Reliability Engineering Project | Page 26 of
+---
 
-14. Final Project Checklist
+## 📊 Project Progress
 
-Category Item Status
-Repository GitHub repo with branch protection Done
-Repository CODEOWNERS and PR templates Done
-Repository Directory structure with placeholders Done
-Application Flask app with health endpoints Done
-Application Nginx reverse proxy configured Done
-Application systemd service with auto-restart Done
-Application Dockerfile with non-root user Done
-CI/CD GitHub Actions lint stage Done
-CI/CD Automated smoke tests Done
-CI/CD Docker build and ECR push Done
-CI/CD Auto-deploy to EC2 on merge Done
-CI/CD Terraform plan/apply pipeline Done
-CI/CD Slack success/failure notifications Done
-Monitoring Prometheus with Node Exporter Done
-Monitoring Grafana dashboards (6 panels) Done
-Monitoring Alert rules for critical conditions Done
-Monitoring Grafana Slack contact point Done
-IaC Terraform EC2 + security group + EIP Done
-IaC Terraform EKS cluster + node group Done
-IaC IAM user with least privilege Done
-Containers Docker image in AWS ECR Done
-Containers Kubernetes manifests (all types) Done
-Containers Helm chart with values.yaml Done
-Containers Minikube local testing Done
-Reliability Runbooks for all alert conditions Done
-Reliability Post-mortem template Done
-Reliability Incident response workflow Done
-Jenkins Jenkins installed on EC2 port 9191 Done
+| Category | Status |
+|---|---|
+| GitHub repo + branch protection | ✅ Complete |
+| Flask app + Nginx + systemd | ✅ Complete |
+| GitHub Actions CI/CD pipeline | ✅ Complete |
+| Prometheus + Grafana monitoring | ✅ Complete |
+| Runbooks + incident response | ✅ Complete |
+| Terraform EC2 + EKS provisioning | ✅ Complete |
+| Docker + AWS ECR | ✅ Complete |
+| Kubernetes manifests + Helm | ✅ Complete |
+| Slack alert notifications | ✅ Complete |
+| Jenkins installed (port 9191) | ✅ Complete |
 
-SRE Project Study Material | Complete Guide &amp; Best Practices
+---
 
-Site Reliability Engineering Project | Page 27 of
-Jenkins Jenkinsfile pipeline defined Done
-Profile LinkedIn updated with GitHub link Done
+## 👤 Author
 
-Congratulations! You have built a production-grade SRE project covering the full
-spectrum of modern DevOps and reliability engineering practices.
+**SRE Engineer Project**
+- GitHub: [YOUR_USERNAME](https://github.com/YOUR_USERNAME)
+- LinkedIn: [Your LinkedIn](https://linkedin.com/in/YOUR_PROFILE)
+
+---
+
+*Built with ❤️ as a production-grade SRE learning project*
