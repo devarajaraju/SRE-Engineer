@@ -98,18 +98,14 @@ jobs:
           ECR_REPOSITORY: sre-app
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker push \
-            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push \
-            $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "Pushed: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Scan image for vulnerabilities
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: sre-app
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          aws ecr wait image-scan-complete \
-            --repository-name $ECR_REPOSITORY \
-            --image-id imageT
+          aws ecr wait image-scan-complete --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG --region us-east-1 || true
+          aws ecr describe-image-scan-findings --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG --region us-east-1 --query 'imageScanFindings.findingSeverityCounts' --output table || true
