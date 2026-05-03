@@ -658,14 +658,4 @@ curl $(minikube service sre-app-service --url)/health
 | Slack alert notifications | ✅ Complete |
 | Jenkins installed (port 9191) | ✅ Complete |
 
----
 
-## 👤 Author
-
-**SRE Engineer Project**
-- GitHub: [YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/YOUR_PROFILE)
-
----
-
-*Built with ❤️ as a production-grade SRE learning project*
