@@ -13,7 +13,7 @@ and automation for platform reliability.
 
 ```bash
 # Clone the repo
-git clone https://github.com/devkr5670/SRE-Engineer.git
+git clone https://github.com/devarajaraju/SRE-Engineer.git
 cd SRE-Engineer
 
 # Run smoke tests locally
