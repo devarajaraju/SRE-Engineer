@@ -6,11 +6,11 @@ import json
 
 app = Flask(__name__)
 
-@app.route("/createJIRA".methods=['POST'])
+@app.route("/createJIRA",methods=['POST'])
 def createJIRA():
     url = "https://devarajakraju.atlassian.net//rest/api/3/issue"
 
-auth = HTTPBasicAuth("devarajakraju@gmail.com", $JIRA_TOKEN)
+auth = HTTPBasicAuth("devarajakraju@gmail.com", ${{ secrets.JIRA_TOKEN }}
 
 headers = {
   "Accept": "application/json",
